@@ -1,9 +1,11 @@
 <?php
+namespace Aoe\FeloginBruteforceProtection\Domain\Repository;
 
 /***************************************************************
  *  Copyright notice
  *
  *  (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
+ *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved
  *
@@ -25,39 +27,30 @@
  ***************************************************************/
 
 /**
- * @package Tx_FeloginBruteforceProtection
- * @subpackage Domain_Repository
+ * Class EntryRepository
+ *
+ * @package Aoe\FeloginBruteforceProtection\Domain\Repository
+ *
  * @author Kevin Schu <kevin.schu@aoemedia.de>
+ * @author Andre Wuttig <wuttig@portrino.de>
+ *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class Tx_FeloginBruteforceProtection_Domain_Repository_Entry extends Tx_Extbase_Persistence_Repository {
+class EntryRepository extends \TYPO3\CMS\Extbase\Persistence\Repository {
 
 	/**
 	 * @return void
 	 */
 	public function initializeObject() {
-		/** @var $defaultQuerySettings Tx_Extbase_Persistence_Typo3QuerySettings */
-		$defaultQuerySettings = $this->objectManager->get('Tx_Extbase_Persistence_Typo3QuerySettings');
+		/** @var $defaultQuerySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+		$defaultQuerySettings = $this->objectManager->get('\TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings');
 		// don't add the pid constraint
 		$defaultQuerySettings->setRespectStoragePage(FALSE);
 		// don't add fields from enablecolumns constraint
-		$defaultQuerySettings->setRespectEnableFields(FALSE);
+		$defaultQuerySettings->setIgnoreEnableFields(TRUE);
 		// don't add sys_language_uid constraint
 		$defaultQuerySettings->setRespectSysLanguage(FALSE);
 		$this->setDefaultQuerySettings($defaultQuerySettings);
-	}
-
-	/**
-	 * @param int $uid
-	 * @return object
-	 */
-	public function findByUid($uid) {
-		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectSysLanguage(FALSE);
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
-		$query->matching($query->equals('uid', $uid));
-		return $query->execute()->getFirst();
 	}
 
 	/**
@@ -67,14 +60,14 @@ class Tx_FeloginBruteforceProtection_Domain_Repository_Entry extends Tx_Extbase_
 	 * @param $identifier
 	 * @return void
 	 */
-	public function cleanUp($secondsTillReset, $maxFailures, $restrictionTime, $identifier = NULL) {
+	public function findEntriesToCleanUp($secondsTillReset, $maxFailures, $restrictionTime, $identifier = NULL) {
 		$time = time();
 		$age = (int)$time - $secondsTillReset;
 		$restrictionTime = (int)$time - $restrictionTime;
 		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectSysLanguage(FALSE);
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+        $query->getQuerySettings()->setRespectStoragePage(FALSE);
+        $query->getQuerySettings()->setIgnoreEnableFields(TRUE);
+        $query->getQuerySettings()->setRespectSysLanguage(FALSE);
 		$constraintsRestrictedEntries = array(
 			$query->lessThan('tstamp', $restrictionTime),
 			$query->greaterThanOrEqual('failures', $maxFailures),
@@ -91,9 +84,7 @@ class Tx_FeloginBruteforceProtection_Domain_Repository_Entry extends Tx_Extbase_
 			$query->logicalAnd($constraintsRestrictedEntries),
 			$query->logicalAnd($constraintsResettableEntries)
 		));
-		foreach ($query->execute() as $object) {
-			$this->removedObjects->attach($object);
-			$this->addedObjects->detach($object);
-		}
+
+        return $query->execute();
 	}
 }

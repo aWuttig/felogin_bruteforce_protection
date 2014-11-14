@@ -1,9 +1,11 @@
 <?php
+namespace Aoe\FeloginBruteforceProtection\Domain\Model;
 
 /***************************************************************
  *  Copyright notice
  *
  *  (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
+ *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved
  *
@@ -25,12 +27,16 @@
  ***************************************************************/
 
 /**
- * @package Tx_FeloginBruteforceProtection
- * @subpackage Domain_Model_Entry
+ * Class Entry
+ *
+ * @package Aoe\FeloginBruteforceProtection\\Domain\Model
+ *
  * @author Kevin Schu <kevin.schu@aoemedia.de>
+ * @author Andre Wuttig <wuttig@portrino.de>
+ *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class Tx_FeloginBruteforceProtection_Domain_Model_Entry extends Tx_Extbase_DomainObject_AbstractEntity {
+class Entry extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 * @var string

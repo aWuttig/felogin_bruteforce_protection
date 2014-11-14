@@ -1,9 +1,11 @@
 <?php
+namespace Aoe\FeloginBruteforceProtection\System;
 
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
+ *  (c) 2013 Kevin Schu <kevin.schu@aoe.com>, AOE GmbH
+ *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved
  *
@@ -25,14 +27,19 @@
  ***************************************************************/
 
 /**
- * @package Tx_FeloginBruteforceProtection
- * @subpackage System
+ *
  * @author Kevin Schu <kevin.schu@aoemedia.de>
  * @author Timo Fuchs <timo.fuchs@aoemedia.de>
+ * @author Andre Wuttig <wuttig@portrino.de>
+ *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class Tx_FeloginBruteforceProtection_System_Configuration
-{
+/**
+ * Class Configuration
+ *
+ * @package Aoe\FeloginBruteforceProtection\\System
+ */
+class Configuration {
 	/**
 	 * @var string
 	 */
@@ -53,6 +60,11 @@ class Tx_FeloginBruteforceProtection_System_Configuration
 	 */
 	const CONF_SECONDS_TILL_RESET = 'seconds_till_reset';
 
+    /**
+     * @var int
+     */
+    const CONF_ROOT_PAGE = 'root_page';
+
 	/**
 	 * @var array
 	 */
@@ -61,8 +73,7 @@ class Tx_FeloginBruteforceProtection_System_Configuration
 	/**
 	 * Initialize configuration array
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		$conf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['felogin_bruteforce_protection']);
 		if (is_array($conf)) {
 			$this->configuration = $conf;
@@ -108,16 +119,24 @@ class Tx_FeloginBruteforceProtection_System_Configuration
 		return (integer) $this->get(self::CONF_SECONDS_TILL_RESET);
 	}
 
+    /**
+     * Return the root page (home page) of the site
+     *
+     * @return int
+     */
+    public function getRootPage() {
+        return (integer) $this->get(self::CONF_ROOT_PAGE);
+    }
+
 	/**
 	 * @param string $key
 	 * @return mixed
 	 * @throws InvalidArgumentException
 	 */
-	public function get($key)
-	{
+	public function get($key) {
 		if (array_key_exists($key, $this->configuration)) {
 			return $this->configuration[$key];
 		}
-		throw new InvalidArgumentException('Configuration key "' . $key . '" does not exist.');
+		throw new \InvalidArgumentException('Configuration key "' . $key . '" does not exist.');
 	}
 }

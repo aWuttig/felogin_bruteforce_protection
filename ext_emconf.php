@@ -1,12 +1,12 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = array(
-	'title' => 'brute force protection',
-	'description' => 'Protect TYPO3´s system extension "fe_login" for brute force attacks.',
+	'title' => 'Brute Force Protection',
+	'description' => 'Protects TYPO3´s frontend authentication (e.g. fe_login) against brute force attacks.',
 	'category' => 'services',
-	'author' => 'Kevin Schu',
-	'author_email' => 'kevin.schu@aoemedia.de',
-	'author_company' => 'AOE media GmbH',
+	'author' => 'Kevin Schu, Andre Wuttig',
+	'author_email' => 'kevin.schu@aoemedia.de, wuttig@portrino.de',
+	'author_company' => 'AOE media GmbH, portrino GmbH',
 	'shy' => '',
 	'priority' => '',
 	'module' => '',
@@ -17,11 +17,12 @@ $EM_CONF[$_EXTKEY] = array(
 	'modify_tables' => '',
 	'clearCacheOnLoad' => 0,
 	'lockType' => '',
-	'version' => '0.3.0',
+	'version' => '6.2.0',
 	'constraints' => array(
 		'depends' => array(
-			'extbase' => '1.3',
-			'typo3' => '4.7',
+            'extbase' => '6.2',
+            'fluid' => '6.2',
+            'typo3' => '6.2',
 		),
 		'conflicts' => array(),
 		'suggests' => array(),

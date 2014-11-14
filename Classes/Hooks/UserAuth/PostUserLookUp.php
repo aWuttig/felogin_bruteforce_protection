@@ -1,10 +1,11 @@
 <?php
+namespace Aoe\FeloginBruteforceProtection\Hook\UserAuth;
 
 /***************************************************************
  * Copyright notice
  *
  * (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
- *
+ * (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -24,125 +25,159 @@
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+
+
+//Alias long namespaces to use shorter ones.
+use \TYPO3\CMS\Core as Core;
+use \TYPO3\CMS\Extbase\Utility as Utility;
+use \TYPO3\CMS\Frontend as Frontend;
+
 /**
- * @package Tx_FeloginBruteforceProtection
- * @subpackage Hooks_UserAuth
+ * Class PostUserLookUp
+ *
+ * @package Aoe\FeloginBruteforceProtection\\Hook\UserAuth
+ *
  * @author Kevin Schu <kevin.schu@aoemedia.de>
  * @author Timo Fuchs <timo.fuchs@aoemedia.de>
+ * @author Andre Wuttig <wuttig@portrino.de>
+ *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class Tx_FeloginBruteforceProtection_Hooks_UserAuth_PostUserLookUp {
-	/**
-	 * @var Tx_FeloginBruteforceProtection_Domain_Service_Restriction
-	 */
-	private $restrictionService;
-	
-	/**
-	 * @var Tx_FeloginBruteforceProtection_System_Configuration
-	 */
-	private $configuration;
-	
-	/**
-	 * Constructor.
-	 * @todo explain why this have be done
-	 */
-	public function __construct() {
-		if (FALSE === ($GLOBALS ['TSFE'] instanceof tslib_fe)) {
-			$GLOBALS ['TSFE'] = t3lib_div::makeInstance ( 'tslib_fe', $GLOBALS ['TYPO3_CONF_VARS'], 2, 0 );
-		}
-		if (FALSE === ($GLOBALS ['TSFE']->sys_page instanceof t3lib_pageSelect)) {
-			$GLOBALS ['TSFE']->sys_page = t3lib_div::makeInstance ( 't3lib_pageSelect' );
-		}
-	}
-	
+class PostUserLookUp {
+
+    /**
+     * Object manager
+     *
+     * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
+     */
+    protected $objectManager;
+
+    /**
+     * @var \Aoe\FeloginBruteforceProtection\System\Configuration
+     */
+    protected $configuration;
+
+    /**
+     * @var \Aoe\FeloginBruteforceProtection\Domain\Service\RestrictionService
+     */
+    protected $restrictionService;
+
 	/**
 	 * @param array $params
 	 * @return void
 	 */
 	public function handlePostUserLookUp(&$params) {
-		if(FALSE === $this->getConfiguration ()->isEnabled ()) {
+
+        $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Extbase\Object\ObjectManager');
+        $this->configuration = $this->objectManager->get('Aoe\FeloginBruteforceProtection\\System\Configuration');
+
+        $this->initTSFE($this->configuration->getRootPage(), TRUE, $GLOBALS['TSFE']);
+
+        $this->restrictionService = $this->objectManager->get('Aoe\FeloginBruteforceProtection\\Domain\Service\RestrictionService');
+
+        if(FALSE === $this->configuration->isEnabled()) {
 			return;
 		}
 
-		$userAuthObject = $params ['pObj'];
-		if ($this->hasFeUserLoggedIn($userAuthObject)) {
-			$this->getRestrictionService ()->removeEntry ();
-		} elseif($this->hasFeUserLogInFailed($userAuthObject)) {
-			$this->getRestrictionService ()->incrementFailureCount ();
-			$this->updateGlobals ( $userAuthObject );
+        /** @var \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication $frontendUserAuthentication */
+		$frontendUserAuthentication = $params['pObj'];
+
+		if ($this->hasFeUserLoggedIn($frontendUserAuthentication)) {
+			$this->restrictionService->removeEntry();
+		} elseif($this->hasFeUserLogInFailed($frontendUserAuthentication)) {
+			$this->restrictionService->incrementFailureCount();
+			$this->updateGlobals($frontendUserAuthentication);
 		}
 	}
-	
+
 	/**
 	 * @param $userAuthObject
 	 * @return boolean
 	 */
 	private function updateGlobals(&$userAuthObject) {
 		$GLOBALS ['felogin_bruteforce_protection'] ['restricted'] = FALSE;
-		if ($this->getRestrictionService ()->isClientRestricted ()) {
+		if ($this->restrictionService->isClientRestricted ()) {
 			$userAuthObject->loginFailure = 1;
 			$GLOBALS ['felogin_bruteforce_protection'] ['restricted'] = TRUE;
-			$GLOBALS ['felogin_bruteforce_protection'] ['restriction_time'] = $this->getConfiguration ()->getRestrictionTime ();
+			$GLOBALS ['felogin_bruteforce_protection'] ['restriction_time'] = $this->configuration->getRestrictionTime ();
 			$GLOBALS ['felogin_bruteforce_protection'] ['restriction_message'] = $this->getRestrictionMessage ();
 			return FALSE;
 		}
 		return TRUE;
 	}
-	
+
 	/**
 	 * @return string
 	 */
 	private function getRestrictionMessage() {
-		$time = ( integer ) ($this->getConfiguration ()->getRestrictionTime () / 60);
-		return Tx_Extbase_Utility_Localization::translate ( 'restriction_message', 'felogin_bruteforce_protection', array ($time, $time ) );
+		$time = (integer) ($this->configuration->getRestrictionTime () / 60);
+		return \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('restriction_message', 'felogin_bruteforce_protection', array ($time, $time));
 	}
-	
-	/**
-	 * @return Tx_FeloginBruteforceProtection_Domain_Service_Restriction
-	 */
-	private function getRestrictionService() {
-		if (FALSE === isset ( $this->restrictionService )) {
-			$this->restrictionService = t3lib_div::makeInstance ( 'Tx_Extbase_Object_ObjectManager' )->get ( 'Tx_FeloginBruteforceProtection_Domain_Service_Restriction' );
-		}
-		return $this->restrictionService;
-	}
-	
-	/**
-	 * @return Tx_FeloginBruteforceProtection_System_Configuration
-	 */
-	private function getConfiguration() {
-		if (FALSE === isset ( $this->configuration )) {
-			$this->configuration = t3lib_div::makeInstance ( 'Tx_Extbase_Object_ObjectManager' )->get ( 'Tx_FeloginBruteforceProtection_System_Configuration' );
-		}
-		return $this->configuration;
-	}
+
 	/**
 	 * check, if FE-user has logged in in this request
-	 * 
-	 * @param t3lib_userAuth $userAuthObject
+	 *
+	 * @param \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication $userAuthObject
 	 */
-	private function hasFeUserLoggedIn(t3lib_userAuth $userAuthObject) {
+	private function hasFeUserLoggedIn(\TYPO3\CMS\Core\Authentication\AbstractUserAuthentication $userAuthObject) {
 		if ($userAuthObject->loginType === 'FE' && $userAuthObject->loginFailure === FALSE && is_array($userAuthObject->user) && $userAuthObject->loginSessionStarted === TRUE) {
-			return TRUE;
+            return TRUE;
 		}
 		return FALSE;
 	}
+
 	/**
 	 * check, if login-action of FE-user failed
-	 * 
-	 * @param t3lib_userAuth $userAuthObject
+	 *
+	 * @param \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication $userAuthObject
 	 */
-	private function hasFeUserLogInFailed(t3lib_userAuth $userAuthObject) {
-		if ($userAuthObject->loginType === 'FE' && $userAuthObject->loginFailure === TRUE && $userAuthObject->user === FALSE) {
-			if (isset ( $userAuthObject->svConfig ['loginNotPossible'] ) && $userAuthObject->svConfig ['loginNotPossible'] === TRUE) {
-				return FALSE;
-			}
+	private function hasFeUserLogInFailed(\TYPO3\CMS\Core\Authentication\AbstractUserAuthentication $userAuthObject) {
+        if ($userAuthObject->loginType === 'FE' && $userAuthObject->loginFailure === TRUE && !$userAuthObject->user) {
 			return TRUE;
 		}
 		return FALSE;
 	}
-}
 
-if (defined ( 'TYPO3_MODE' ) && $TYPO3_CONF_VARS [TYPO3_MODE] ['XCLASS'] ['ext/felogin_bruteforce_protection/Classes/Hooks/UserAuth/PostUserLookUp.php']) {
-	include_once ($TYPO3_CONF_VARS [TYPO3_MODE] ['XCLASS'] ['ext/felogin_bruteforce_protection/Classes/Hooks/UserAuth/PostUserLookUp.php']);
+    private function initTSFE($pageUid = 1, $overrule = FALSE, $tsfe = NULL) {
+            // begin
+        if (!is_object($GLOBALS['TT']) || $overrule === TRUE) {
+            $GLOBALS['TT'] = new \TYPO3\CMS\Core\TimeTracker\TimeTracker();
+            $GLOBALS['TT']->start();
+        }
+
+        if ((!is_object($GLOBALS['TSFE']) || $overrule === TRUE) && is_int($pageUid)) {
+            // builds TSFE object
+            $GLOBALS['TSFE'] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Frontend\\Controller\\TypoScriptFrontendController', $GLOBALS['TYPO3_CONF_VARS'], $pageUid, $type=0, $no_cache=0, $cHash='', $jumpurl='', $MP='', $RDCT='');
+
+            if (isset($tsfe->fe_user)) {
+                $GLOBALS['TSFE']->fe_user = $tsfe->fe_user;
+            }
+
+            // builds rootline
+            $GLOBALS['TSFE']->sys_page = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Frontend\\Page\\PageRepository');
+            $rootLine = $GLOBALS['TSFE']->sys_page->getRootLine($pageUid);
+
+            // init template
+            $GLOBALS['TSFE']->tmpl = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Core\\TypoScript\\ExtendedTemplateService');
+            $GLOBALS['TSFE']->tmpl->tt_track = 0;// Do not log time-performance information
+            $GLOBALS['TSFE']->tmpl->init();
+
+            // this generates the constants/config + hierarchy info for the template.
+            $GLOBALS['TSFE']->tmpl->runThroughTemplates($rootLine, $start_template_uid=0);
+            $GLOBALS['TSFE']->tmpl->generateConfig();
+            $GLOBALS['TSFE']->tmpl->loaded=1;
+
+            // get config array and other init from pagegen
+            $GLOBALS['TSFE']->set_no_cache();
+            $GLOBALS['TSFE']->getConfigArray();
+
+            \TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
+
+            $GLOBALS['TSFE']->cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer');
+            // will throw warnings, at this point we do not know why
+//            $GLOBALS['TSFE']->settingLanguage();
+            $GLOBALS['TSFE']->settingLocale();
+        }
+    }
+
 }
