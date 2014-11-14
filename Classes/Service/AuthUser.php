@@ -26,8 +26,8 @@ namespace Aoe\FeloginBruteforceProtection\Service;
  ***************************************************************/
 
 /**
- * @author Kevin Schu <kevin.schu@aoemedia.de>
- * @author Timo Fuchs <timo.fuchs@aoemedia.de>
+ * @author Kevin Schu <kevin.schu@aoe.com>
+ * @author Timo Fuchs <timo.fuchs@aoe.com>
  * @author Andre Wuttig <wuttig@portrino.de>
  *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later

@@ -4,7 +4,7 @@ namespace Aoe\FeloginBruteforceProtection\Command;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 AOE media GmbH <dev@aoemedia.de>
+ *  (c) 2013 AOE GmbH <dev@aoe.com>
  *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved

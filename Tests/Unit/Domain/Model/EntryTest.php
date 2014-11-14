@@ -3,7 +3,7 @@
 /***************************************************************
  * Copyright notice
  *
- * (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
+ * (c) 2013 Kevin Schu <kevin.schu@aoe.com>, AOE GmbH
  *
  * All rights reserved
  *
@@ -34,7 +34,7 @@
  * @package TYPO3
  * @subpackage brute force protection
  *
- * @author Kevin Schu <kevin.schu@aoemedia.de>
+ * @author Kevin Schu <kevin.schu@aoe.com>
  */
 class Tx_FeloginBruteforceProtection_Domain_Model_EntryTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
 	/**

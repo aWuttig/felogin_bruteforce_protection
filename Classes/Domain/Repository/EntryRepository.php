@@ -4,7 +4,7 @@ namespace Aoe\FeloginBruteforceProtection\Domain\Repository;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Kevin Schu <kevin.schu@aoemedia.de>, AOE media GmbH
+ *  (c) 2013 Kevin Schu <kevin.schu@aoe.com>, AOE GmbH
  *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved
@@ -31,7 +31,7 @@ namespace Aoe\FeloginBruteforceProtection\Domain\Repository;
  *
  * @package Aoe\FeloginBruteforceProtection\Domain\Repository
  *
- * @author Kevin Schu <kevin.schu@aoemedia.de>
+ * @author Kevin Schu <kevin.schu@aoe.com>
  * @author Andre Wuttig <wuttig@portrino.de>
  *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later

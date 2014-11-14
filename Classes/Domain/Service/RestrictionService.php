@@ -4,7 +4,7 @@ namespace Aoe\FeloginBruteforceProtection\Domain\Service;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 AOE media GmbH, <dev@aoemedia.de>
+ *  (c) 2013 AOE GmbH, <dev@aoe.com>
  *  (c) 2014 André Wuttig <wuttig@portrino.de>, portrino GmbH
  *
  *  All rights reserved
@@ -31,8 +31,8 @@ namespace Aoe\FeloginBruteforceProtection\Domain\Service;
  *
  * @package Aoe\FeloginBruteforceProtection\\Domain\Service
  *
- * @author Kevin Schu <kevin.schu@aoemedia.de>
- * @author Timo Fuchs <timo.fuchs@aoemedia.de>
+ * @author Kevin Schu <kevin.schu@aoe.com>
+ * @author Timo Fuchs <timo.fuchs@aoe.com>
  * @author Andre Wuttig <wuttig@portrino.de>
  *
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
